@@ -1,0 +1,22 @@
+project_name = "listmonk2"
+environment  = "dev"
+owner        = "equipo-devops"
+
+aws_region   = "eu-east-1"
+vpc_cidr     = "10.0.0.0/16"
+
+node_instance_types = ["t3.medium"]
+
+postgres_engine_version = "16.4"
+postgres_major_family   = "16"
+
+db_instance_class    = "db.t4g.micro"
+db_allocated_storage = 20
+db_name              = "listmonk"
+db_username          = "listmonk"
+
+listmonk_admin_user = "admin"
+
+github_repo_url = "TU_ORG/TU_REPO"
+
+allowed_cidrs = ["77.226.200.235/32"]

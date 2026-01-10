@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-for-fluent-bit
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    chart: aws-for-fluent-bit
+    targetRevision: "0.1.35"
+    helm:
+      valueFiles:
+        - $values/gitops/values/aws-for-fluent-bit-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+  - repoURL: REPLACE_ME_REPO_URL
+    targetRevision: main
+    ref: values

@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: listmonk
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: listmonk
+  template:
+    metadata:
+      labels:
+        app: listmonk
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: listmonk
+          image: REPLACE_ME_IMAGE:REPLACE_ME_TAG
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+              name: http
+          envFrom:
+            - secretRef:
+                name: listmonk-secrets
+          env:
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: listmonk-config
+                  key: TZ
+            - name: LISTMONK_APP__ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: listmonk-config
+                  key: LISTMONK_APP__ADDRESS
+            - name: LISTMONK_APP__ROOT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: listmonk-config
+                  key: LISTMONK_APP__ROOT_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+  strategy:
+    blueGreen:
+      activeService: listmonk-active
+      previewService: listmonk-preview
+      autoPromotionEnabled: false

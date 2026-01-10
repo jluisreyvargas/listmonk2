@@ -1,0 +1,6 @@
+cloudWatch:
+  enabled: true
+  region: REPLACE_ME_AWS_REGION
+  logGroupName: /eks/REPLACE_ME_CLUSTER_NAME/containers
+  logStreamPrefix: from-fluent-bit-
+  logRetentionDays: 7

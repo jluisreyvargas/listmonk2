@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: listmonk-config
+data:
+  TZ: "Europe/Madrid"
+  LISTMONK_APP__ADDRESS: "0.0.0.0:9000"
+  LISTMONK_APP__ROOT_URL: "https://REPLACE_ME_HOST/"

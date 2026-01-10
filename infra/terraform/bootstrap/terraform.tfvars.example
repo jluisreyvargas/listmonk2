@@ -1,0 +1,4 @@
+aws_region   = "eu-west-1"
+project_name = "listmonk2"
+environment  = "dev"
+owner        = "devops-team"

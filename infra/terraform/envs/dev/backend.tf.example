@@ -1,0 +1,9 @@
+terraform {
+  backend "s3" {
+    bucket         = "RELLENA_CON_OUTPUT_bootstrap_tfstate_bucket"
+    key            = "listmonk2/dev/terraform.tfstate"
+    region         = "eu-west-1"
+    dynamodb_table = "RELLENA_CON_OUTPUT_tflock_table"
+    encrypt        = true
+  }
+}

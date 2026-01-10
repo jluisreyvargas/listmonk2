@@ -1,0 +1,9 @@
+grafana:
+  adminPassword: prom-operator
+  service:
+    type: ClusterIP
+prometheus:
+  prometheusSpec:
+    retention: 10d
+alertmanager:
+  enabled: true

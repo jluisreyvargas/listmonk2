@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: listmonk
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: REPLACE_ME_REPO_URL
+    targetRevision: main
+    path: gitops/workloads/listmonk
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: listmonk
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

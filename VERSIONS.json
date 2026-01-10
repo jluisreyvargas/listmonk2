@@ -1,0 +1,18 @@
+{
+  "terraform": "1.14.3",
+  "aws_provider": "6.27.0",
+  "eks_module": "21.11.0",
+  "k8s_version": "1.34",
+  "argocd_app": "v3.2.3",
+  "argo_cd_chart": "9.2.4",
+  "argo_rollouts": "v1.8.3",
+  "argo_rollouts_chart": "2.40.5",
+  "external_secrets": "v1.2.1",
+  "kube_prom_stack": "80.11.0",
+  "aws_lb_controller": "v2.17.0",
+  "loki_chart": "6.49.0",
+  "listmonk": "v6.0.0",
+  "vpc_module": "6.5.1",
+  "rds_module": "7.0.0",
+  "aws_for_fluent_bit_chart": "0.1.35"
+}

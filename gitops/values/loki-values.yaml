@@ -1,0 +1,12 @@
+loki:
+  auth_enabled: false
+
+deploymentMode: SingleBinary
+
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+
+# Promtail is deprecated in some setups; we use grafana/promtail chart separately to collect logs.
