@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.27"
+      version = "~> 5.8"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -55,7 +55,7 @@ locals {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "6.5.1"
+  version = "5.13.0"
 
   name = local.name
   cidr = var.vpc_cidr
@@ -107,7 +107,7 @@ resource "aws_security_group" "db" {
 
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "7.0.0"
+  version = "6.7.0"
 
   identifier = "${local.name}-postgres"
 
@@ -137,7 +137,7 @@ module "db" {
 
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "21.11.0"
+  version = "20.24.0"
 
   cluster_name    = local.name
   cluster_version = "1.34"
