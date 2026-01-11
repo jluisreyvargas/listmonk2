@@ -15,7 +15,7 @@ variable "owner" {
 
 variable "aws_region" {
   type    = string
-  default = "eu-west-1"
+  default = "eu-east-1"
 }
 
 variable "vpc_cidr" {
@@ -25,7 +25,7 @@ variable "vpc_cidr" {
 
 variable "node_instance_types" {
   type    = list(string)
-  default = ["t3.medium"]
+  default = ["t3.micro"]
 }
 
 variable "postgres_engine_version" {
@@ -66,6 +66,7 @@ variable "listmonk_admin_user" {
 # GitHub: "org/repo" (sin https)
 variable "github_repo_url" {
   type = string
+  default = "https://github.com/jluisreyvargas/listmonk2"
 }
 
 # Para restringir acceso al panel (si configuras Ingress auth/IP)
