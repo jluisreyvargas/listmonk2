@@ -3,31 +3,75 @@ name: update-gitops
 on:
   workflow_run:
     workflows: ["ci"]
-    types:
-      - completed
+    types: [completed]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+env:
+  GITOPS_REPO: jluisreyvargas/listmonk2-gitops
+  GITOPS_BASE_BRANCH: main
+  GITOPS_FILE: workloads/listmonk/kustomization.yaml
+  IMAGE: ghcr.io/jluisreyvargas/listmonk2
 
 jobs:
   pr:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITOPS_REPO }}
+          ref: ${{ env.GITOPS_BASE_BRANCH }}
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
 
-      - name: Update gitops image tag
+      - name: Update image tag in kustomization.yaml
+        working-directory: gitops
         run: |
-          TAG=${{ github.event.workflow_run.head_sha }}
-          FILE=gitops/workloads/listmonk/kustomization.yaml
-          sed -i "s/newTag: .*/newTag: ${TAG}/" "$FILE"
-          echo "Updated $FILE to $TAG"
+          set -eu
+          TAG="${{ github.event.workflow_run.head_sha }}"
+          FILE="${{ env.GITOPS_FILE }}"
 
-      - name: Create Pull Request
+          if [ ! -f "$FILE" ]; then
+            echo "No existe $FILE en el repo GitOps"
+            exit 1
+          fi
+
+          python - <<'PY'
+import pathlib, re
+
+file = pathlib.Path("${{ env.GITOPS_FILE }}")
+s = file.read_text()
+
+image = "${{ env.IMAGE }}"
+tag = "${{ github.event.workflow_run.head_sha }}"
+
+# 1) Reemplaza placeholders si siguen ahí
+s = s.replace("REPLACE_ME_IMAGE", image)
+
+# 2) Actualiza newTag SOLO dentro del bloque de esa imagen
+# Busca la entrada "- name: <image>" y cambia el primer newTag: debajo.
+pattern = rf"(\-\s*name:\s*{re.escape(image)}\s*\n(?:.*\n)*?\s*newTag:\s*)([^\n]+)"
+ns, n = re.subn(pattern, rf"\g<1>{tag}", s, count=1)
+if n == 0:
+    raise SystemExit(f"No encuentro la entrada images: - name: {image} con newTag en {file}")
+
+file.write_text(ns)
+print(f"Updated {file} -> {image}:{tag}")
+PY
+
+      - name: Create Pull Request (GitOps)
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
           commit-message: "gitops: bump listmonk image to ${{ github.event.workflow_run.head_sha }}"
           title: "gitops: bump listmonk image"
-          body: "Actualiza la imagen desplegada por ArgoCD (GitOps)."
-          branch: "gitops/bump-image"
+          body: |
+            Actualiza la imagen desplegada por ArgoCD (GitOps).
+            Imagen: ${{ env.IMAGE }}:${{ github.event.workflow_run.head_sha }}
+          branch: "gitops/bump-image-${{ github.event.workflow_run.head_sha }}"
+          base: ${{ env.GITOPS_BASE_BRANCH }}

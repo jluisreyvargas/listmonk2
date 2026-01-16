@@ -2,19 +2,20 @@ name: ci
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       - "app/**"
       - ".github/workflows/ci.yml"
   pull_request:
 
 permissions:
-  id-token: write
   contents: read
+  packages: write
+  security-events: write
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/jluisreyvargas/listmonk2
 
 jobs:
   build-test-scan-push:
@@ -32,34 +33,52 @@ jobs:
           chmod +x app/verify.sh
           ./app/verify.sh
 
-      - name: Basic checks (lint-ish)
-        run: |
-          echo "No upstream code here; build runs in Docker."
-          docker --version
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      # PR: build local (load) para poder escanear sin push
+      - name: Build (PR - no push)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: false
+          load: true
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Build image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t "$ECR_REPOSITORY:$IMAGE_TAG" ./app
+      # main: build + push
+      - name: Build + Push (main)
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
 
       - name: Trivy scan (bloqueante)
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: "${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          image-ref: "${{ env.IMAGE }}:${{ github.sha }}"
           format: "table"
           exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
-
-      - name: Push image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker push "$ECR_REPOSITORY:$IMAGE_TAG"

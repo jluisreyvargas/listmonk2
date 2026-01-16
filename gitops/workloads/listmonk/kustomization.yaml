@@ -10,6 +10,6 @@ resources:
   - ingress.yaml
 
 images:
-  - name: REPLACE_ME_IMAGE
-    newName: REPLACE_ME_IMAGE
+  - name: ghcr.io/jluisreyvargas/listmonk2
+    newName: ghcr.io/jluisreyvargas/listmonk2
     newTag: REPLACE_ME_TAG
