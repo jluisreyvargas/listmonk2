@@ -8,4 +8,5 @@ resources:
   - argo-rollouts.yaml
   - kube-prometheus-stack.yaml
   - aws-for-fluent-bit.yaml
+  - loki.yaml
   - listmonk.yaml

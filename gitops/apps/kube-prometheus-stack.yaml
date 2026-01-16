@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: "80.11.0"
-    helm:
-      valueFiles:
-        - $values/gitops/values/kube-prometheus-stack-values.yaml
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: "80.11.0"
+      helm:
+        valueFiles:
+          - $values/gitops/values/kube-prometheus-stack-values.yaml
+    - repoURL: https://github.com/jluisreyvargas/listmonk2
+      targetRevision: master
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -21,7 +24,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-  sources:
-  - repoURL: REPLACE_ME_REPO_URL
-    targetRevision: main
-    ref: values

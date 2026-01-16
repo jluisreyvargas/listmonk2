@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://aws.github.io/eks-charts
-    chart: aws-load-balancer-controller
-    targetRevision: "1.17.0"
-    helm:
-      valueFiles:
-        - $values/gitops/values/aws-load-balancer-controller-values.yaml
+  sources:
+    - repoURL: https://aws.github.io/eks-charts
+      chart: aws-load-balancer-controller
+      targetRevision: "1.17.0"
+      helm:
+        valueFiles:
+          - $values/gitops/values/aws-load-balancer-controller-values.yaml
+    - repoURL: https://github.com/jluisreyvargas/listmonk2
+      targetRevision: master
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
@@ -21,7 +24,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-  sources:
-  - repoURL: REPLACE_ME_REPO_URL
-    targetRevision: main
-    ref: values
