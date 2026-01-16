@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: REPLACE_ME_REPO_URL
+    repoURL: https://github.com/jluisreyvargas/listmonk2
     targetRevision: main
     path: gitops/apps
   destination:
